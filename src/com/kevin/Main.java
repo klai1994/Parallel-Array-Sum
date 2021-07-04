@@ -1,53 +1,51 @@
 package com.kevin;
 
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class Main {
-	
+
 	final static int arraySize = 200000000;
-	static int singleSum = 0;
-	static int multiSum = 0;
-	
+	final static int threads = 12;
+
 	public static void main(String[] args) {
 		
-		int[] singleArr = new int[arraySize];
-		int[] multiArr= new int[arraySize];
+		// Single thread
+		int sum = 0;
+		long startTime = System.nanoTime();
+		int[] array = new int[arraySize];	
 		Random rand = new Random();		
 		
-		for (int i = 0; i < arraySize; i++) {
-			singleArr[i] = rand.nextInt(10) + 1;
-			multiArr[i] = rand.nextInt(10) + 1;
-		}
-		
-		
-		long startTime = System.nanoTime();
-		for (int i = 0; i < arraySize; i++) {
-			singleSum += singleArr[i];
-		}
+		for (int i = 0; i < arraySize; i++) {	
+			array[i] = rand.nextInt(10) + 1;
+			sum += array[i];
+		}	
 		long endTime = System.nanoTime();
 		
-		System.out.println("Sum: " + singleSum);
+		System.out.println("Sum: " + sum);
 		System.out.println("Single thread time: " + (endTime - startTime));
 		
+		// Multi thread
 		startTime = System.nanoTime();
-		new Thread() {
-			public void run() {
-				for (int i = 0; i < arraySize / 2; i++) {
-					multiSum += singleArr[i];
-				}
+		
+		ExecutorService executor = Executors.newFixedThreadPool(threads); 
+		Callable<Integer> threadCall = new ArrayThread(threads, arraySize);
+		
+		try {
+			for (int i = 0; i < threads; i++) {
+				sum = executor.submit(threadCall).get();
 			}
-		}.start();
-		new Thread() {
-			public void run() {
-				for (int i = arraySize / 2; i < arraySize; i++) {
-					multiSum += singleArr[i];
-				}
-			}
-		}.start();
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		}
 		endTime = System.nanoTime();
 		
-		System.out.println("Sum: " + multiSum);
+		System.out.println("Sum: " + sum);
 		System.out.println("Multi thread time: " + (endTime - startTime));
-	}
+		}
 	
 }
