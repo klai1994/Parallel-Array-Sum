@@ -10,7 +10,7 @@ import java.util.concurrent.Future;
 public class Main {
 
 	final static int arraySize = 200000000;
-	final static int threads = 12;
+	final static int threads = 64;
 
 	public static void main(String[] args) {
 		
@@ -42,6 +42,7 @@ public class Main {
 		} catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();
 		}
+		executor.shutdown();
 		endTime = System.nanoTime();
 		
 		System.out.println("Sum: " + sum);
